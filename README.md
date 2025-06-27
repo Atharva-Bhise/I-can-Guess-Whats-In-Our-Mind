@@ -1,6 +1,6 @@
-# I Can Guess What's In Our Mind
+# I Can Guess What's In Your Mind
 
-Welcome to "I Can Guess What's In Our Mind," an interactive game that guesses the word in your mind based on your inputs. This README will guide you on how to set up and play the game.
+Welcome to "I Can Guess What's In Your Mind," an interactive game that guesses the word in your mind based on your inputs. This README will guide you on how to set up and play the game.
 
 ## Table of Contents
 - [Features](#features)
