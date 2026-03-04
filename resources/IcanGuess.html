@@ -364,6 +364,10 @@
             letter-spacing: 3px;
             text-transform: capitalize;
             text-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+            /* Prevents long strings from breaking out of the container */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-all;
         }
 
         .secondary-button {
@@ -384,6 +388,10 @@
             th, td { padding: 8px 2px; font-size: 1rem; }
             .columnButton { padding: 10px 2px; font-size: 1rem; }
             .key-hint { display: none; } /* Hide key hints on tight mobile screens */
+            .result-word { 
+                font-size: 2rem; /* Reduced font size for mobile */
+                letter-spacing: 1px; /* Reduced letter spacing for mobile */
+            }
         }
     </style>
 </head>
