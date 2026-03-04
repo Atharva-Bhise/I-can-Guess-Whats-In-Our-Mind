@@ -305,6 +305,8 @@
             text-align: center;
             width: 90%;
             max-width: 420px;
+            max-height: 90vh; /* Prevent modal from growing vertically beyond the screen */
+            overflow-y: auto; /* Enable scrolling if content gets too tall */
             transform: scale(0.95) translateY(10px);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
@@ -357,16 +359,23 @@
         }
 
         .result-word {
-            font-size: 3rem;
+            font-size: clamp(1.5rem, 8vw, 2.5rem); /* Responsive font scaling */
             font-weight: 900;
             color: var(--accent-color);
             margin: 20px 0;
-            letter-spacing: 3px;
+            letter-spacing: 2px; /* Slightly reduced to prevent edge clipping */
             text-transform: capitalize;
             text-shadow: 2px 2px 0px rgba(0,0,0,0.05);
-            /* Prevents long strings from breaking out of the container */
+            line-height: 1.4; /* Better spacing for multi-line words */
+            
+            /* Enhanced container constraints and word wrapping */
+            width: 100%;
+            max-height: 40vh; /* Limits word height, triggers inner scrolling if needed */
+            overflow-y: auto; 
+            padding: 0 5px; /* Safely accommodates letter spacing */
+            
             word-wrap: break-word;
-            overflow-wrap: break-word;
+            overflow-wrap: anywhere; /* Superior forcing of line breaks */
             word-break: break-all;
         }
 
@@ -388,9 +397,14 @@
             th, td { padding: 8px 2px; font-size: 1rem; }
             .columnButton { padding: 10px 2px; font-size: 1rem; }
             .key-hint { display: none; } /* Hide key hints on tight mobile screens */
+            
+            .modal-content {
+                padding: 30px 20px; /* Conserves vertical space on mobile */
+            }
+            
             .result-word { 
-                font-size: 2rem; /* Reduced font size for mobile */
-                letter-spacing: 1px; /* Reduced letter spacing for mobile */
+                font-size: clamp(1.5rem, 8vw, 2.5rem); /* Extra scaling down for tight mobile screens */
+                letter-spacing: 1px; 
             }
         }
     </style>
