@@ -2,7 +2,7 @@
 <html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>I Can Guess What's In Your Mind</title>
     
     <!-- High-Resolution Tab Icons -->
@@ -51,6 +51,7 @@
             margin: 0;
             padding: 0;
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            -webkit-tap-highlight-color: transparent; /* Removes default mobile tap highlight */
         }
 
         html {
@@ -90,6 +91,7 @@
             cursor: pointer;
             box-shadow: 0 4px 6px -1px var(--shadow-color);
             padding: 0;
+            outline: none;
         }
 
         .theme-toggle svg {
@@ -216,10 +218,12 @@
             transition: background-color 0.2s;
         }
 
-        tr:hover td { background-color: var(--table-hover); }
+        @media (hover: hover) {
+            tr:hover td { background-color: var(--table-hover); }
+        }
 
         /* Buttons & Inputs */
-        button {
+        button, .columnButton {
             background-color: var(--primary-color);
             color: white;
             padding: 12px 24px;
@@ -229,38 +233,38 @@
             font-size: 1rem;
             font-weight: 600;
             font-family: inherit;
-            transition: all 0.2s ease;
+            transition: transform 0.1s ease, background-color 0.2s ease, box-shadow 0.2s ease;
             width: 100%;
+            user-select: none;
+            touch-action: manipulation; /* Prevents double-tap zooming on mobile */
+            outline: none;
         }
 
         .columnButton {
-            background-color: var(--primary-color);
-            color: white;
             /* Tighter padding to fit 7 columns evenly */
-            padding: 8px 4px;
-            border: none;
+            padding: 10px 4px;
             border-radius: 8px;
-            cursor: pointer;
             font-size: 1.1rem;
-            font-weight: 600;
-            font-family: inherit;
-            transition: all 0.2s ease;
-            width: 100%;
             display: flex;
             flex-direction: column;
             align-items: center;
             gap: 4px;
         }
 
-        button:hover, .columnButton:hover {
-            background-color: var(--primary-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        /* Only apply hover effects on devices with a mouse (solves mobile sticky-hover bug) */
+        @media (hover: hover) {
+            button:hover, .columnButton:hover {
+                background-color: var(--primary-hover);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+            }
         }
 
+        /* Active state applies everywhere (mobile touch + desktop click) */
         button:active, .columnButton:active {
-            transform: translateY(0);
+            transform: translateY(2px) scale(0.98);
             box-shadow: none;
+            background-color: var(--primary-hover);
         }
 
         .key-hint {
@@ -368,15 +372,17 @@
             border: 2px solid var(--border-color);
         }
         
-        .secondary-button:hover {
-            background-color: var(--border-color);
-            box-shadow: none;
+        @media (hover: hover) {
+            .secondary-button:hover {
+                background-color: var(--border-color);
+                box-shadow: none;
+            }
         }
 
         @media (max-width: 480px) {
             .game-container { padding: 20px; }
             th, td { padding: 8px 2px; font-size: 1rem; }
-            .columnButton { padding: 8px 2px; font-size: 1rem; }
+            .columnButton { padding: 10px 2px; font-size: 1rem; }
             .key-hint { display: none; } /* Hide key hints on tight mobile screens */
         }
     </style>
@@ -415,7 +421,7 @@
     <!-- Setup Modal -->
     <div id="setupModal" class="modal">
         <div class="modal-content">
-            <!-- Increased image size from 120px to 180px -->
+            <!-- Increased image size from 120px to 180px & explicitly retained user's filename -->
             <img src="favicon1.png" alt="Brain Mascot" style="max-width: 180px; margin: 0 auto 15px auto; display: block;">
             <h2>I Can Guess Your Word!</h2>
             <p>Think of a word. Tell me how many letters it has, and answer a few simple questions.</p>
@@ -562,7 +568,7 @@
                 btn.className = 'columnButton';
                 
                 // Add Number and Key Hint
-                btn.innerHTML = `<span>${i + 1}</span> <span class="key-hint">[Key ${i + 1}]</span>`;
+                btn.innerHTML = `<span>${i + 1}</span> <span class="key-hint">[Press Key ${i + 1}]</span>`;
                 btn.onclick = () => handleColumnSelection(i);
                 
                 th.appendChild(btn);
@@ -704,9 +710,10 @@
             if (!isNaN(key) && key >= 1 && key <= maxColumns) {
                 handleColumnSelection(key - 1);
                 
+                // Visual feedback for keyboard interaction
                 const buttons = document.querySelectorAll('.columnButton');
                 if(buttons[key - 1]) {
-                    buttons[key - 1].style.transform = 'translateY(0)';
+                    buttons[key - 1].style.transform = 'translateY(2px) scale(0.98)';
                     buttons[key - 1].style.backgroundColor = 'var(--primary-hover)';
                     setTimeout(() => {
                         buttons[key - 1].style.transform = '';
