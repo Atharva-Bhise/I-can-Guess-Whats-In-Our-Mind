@@ -1,96 +1,724 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>I Can Guess What's In Our Mind</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>I Can Guess What's In Your Mind</title>
+    
+    <!-- High-Resolution Tab Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="favicon1.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="favicon1.png">
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            /* Light Theme Variables */
+            --bg-color: #f3f4f6;
+            --card-bg: #ffffff;
+            --text-main: #111827;
+            --text-muted: #4b5563;
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --accent-color: #f97316;
+            --border-color: #e5e7eb;
+            --table-header: #f8fafc;
+            --table-hover: #f1f5f9;
+            --success: #10b981;
+            --modal-overlay: rgba(17, 24, 39, 0.6);
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme Variables */
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary-color: #6366f1;
+            --primary-hover: #818cf8;
+            --accent-color: #fb923c;
+            --border-color: #334155;
+            --table-header: #0f172a;
+            --table-hover: #334155;
+            --success: #34d399;
+            --modal-overlay: rgba(0, 0, 0, 0.75);
+            --shadow-color: rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        html {
+            /* Fixes the left-shift glitch by permanently showing the scrollbar track */
+            overflow-y: scroll; 
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            /* Better Centering Technique to prevent layout shifts */
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Top Bar for Theme Toggle */
+        .top-bar {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+        }
+
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px var(--shadow-color);
+            padding: 0;
+        }
+
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* Main Game Container */
+        .game-container {
+            background-color: var(--card-bg);
+            padding: 35px;
+            border-radius: 24px;
+            box-shadow: 0 20px 25px -5px var(--shadow-color), 0 10px 10px -5px var(--shadow-color);
+            text-align: center;
+            width: 100%;
+            max-width: 650px;
+            transition: filter 0.3s ease;
+            position: relative;
+        }
+
+        .blur-background {
+            filter: blur(10px);
+            pointer-events: none;
+        }
+
+        /* Dynamic Instructions & Progress */
+        .instruction-box {
+            margin-bottom: 25px;
+            padding: 20px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+        }
+
+        #stepTitle {
+            font-size: 1.25rem;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        #stepInstruction {
+            font-size: 1.05rem;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .highlight-text {
+            color: var(--accent-color);
+            font-weight: 800;
+            font-size: 1.15em;
+            background: var(--card-bg);
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .progress-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .progress-bar {
+            flex-grow: 1;
+            height: 10px;
+            background-color: var(--border-color);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--success);
+            width: 0%;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            min-width: 45px;
+        }
+
+        /* Table Styling */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            /* Forces table to respect explicit widths */
+            table-layout: fixed; 
+        }
+
+        th, td {
+            /* Adjusted padding to comfortably fit 7 columns */
+            padding: 10px 4px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            border-right: 1px solid var(--border-color);
+        }
+
+        th:last-child, td:last-child { border-right: none; }
+        tr:last-child td { border-bottom: none; }
+
+        th {
+            background-color: var(--table-header);
+            padding: 12px 6px;
+        }
+
+        td {
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: var(--text-main);
+            transition: background-color 0.2s;
+        }
+
+        tr:hover td { background-color: var(--table-hover); }
+
+        /* Buttons & Inputs */
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        .columnButton {
+            background-color: var(--primary-color);
+            color: white;
+            /* Tighter padding to fit 7 columns evenly */
+            padding: 8px 4px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.2s ease;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        button:hover, .columnButton:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+        }
+
+        button:active, .columnButton:active {
+            transform: translateY(0);
+            box-shadow: none;
+        }
+
+        .key-hint {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            font-weight: 400;
+            /* Prevents text from breaking into two lines in Phase 2 */
+            white-space: nowrap; 
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--modal-overlay);
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            text-align: center;
+            width: 90%;
+            max-width: 420px;
+            transform: scale(0.95) translateY(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal h2 {
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            font-size: 1.75rem;
+            font-weight: 800;
+        }
+
+        .modal p {
+            color: var(--text-muted);
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .input-group { margin-bottom: 25px; }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            background: var(--bg-color);
+            color: var(--text-main);
+            outline: none;
+            text-align: center;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="number"]:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 10px;
+            min-height: 20px;
+        }
+
+        .result-word {
+            font-size: 3rem;
+            font-weight: 900;
+            color: var(--accent-color);
+            margin: 20px 0;
+            letter-spacing: 3px;
+            text-transform: capitalize;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.05);
+        }
+
+        .secondary-button {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            border: 2px solid var(--border-color);
+        }
+        
+        .secondary-button:hover {
+            background-color: var(--border-color);
+            box-shadow: none;
+        }
+
+        @media (max-width: 480px) {
+            .game-container { padding: 20px; }
+            th, td { padding: 8px 2px; font-size: 1rem; }
+            .columnButton { padding: 8px 2px; font-size: 1rem; }
+            .key-hint { display: none; } /* Hide key hints on tight mobile screens */
+        }
+    </style>
 </head>
 <body>
-    <div class="outerBox" id="content">
-        <br>
-        <div class="AlphaNum">
-            <center id="Messages">
-                <b>Click The Column Number Where The First Letter Of Your Word Appears.<br>
-                Repeat This For Each Letter Of Your Word Till The Last Letter.
-                </b>
-            </center>
-            <table border="1" id="alphabetTable" height="500" width="600">
-                    <thead>
-                        <tr>
-                            <th><input type="button" class="columnButton" value="1"></th>
-                            <th><input type="button" class="columnButton" value="2"></th>
-                            <th><input type="button" class="columnButton" value="3"></th>
-                            <th><input type="button" class="columnButton" value="4"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>a</td>
-                            <td>b</td>
-                            <td>c</td>
-                            <td>d</td>
-                        </tr>
-                        <tr>
-                            <td>e</td>
-                            <td>f</td>
-                            <td>g</td>
-                            <td>h</td>
-                        </tr>
-                        <tr>
-                            <td>i</td>
-                            <td>j</td>
-                            <td>k</td>
-                            <td>l</td>
-                        </tr>
-                        <tr>
-                            <td>m</td>
-                            <td>n</td>
-                            <td>o</td>
-                            <td>p</td>
-                        </tr>
-                        <tr>
-                            <td>q</td>
-                            <td>r</td>
-                            <td>s</td>
-                            <td>t</td>
-                        </tr>
-                        <tr>
-                            <td>u</td>
-                            <td>v</td>
-                            <td>w</td>
-                            <td>x</td>
-                        </tr>
-                        <tr>
-                            <td>y</td>
-                            <td>z</td>
-                            <td></td>
-                            <td></td>
-                        </tr>
-                    </tbody>                
+
+    <!-- Theme Toggle -->
+    <div class="top-bar">
+        <button class="theme-toggle" id="themeToggle" aria-label="Toggle Theme">
+            <svg id="sunIcon" style="display:none;" viewBox="0 0 24 24"><path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-2a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM11 1h2v3h-2V1zm0 19h2v3h-2v-3zM3.515 4.929l1.414-1.414L7.05 5.636 5.636 7.05 3.515 4.93zM16.95 18.364l1.414-1.414 2.121 2.121-1.414 1.414-2.121-2.121zm2.121-14.85l1.414 1.415-2.121 2.121-1.414-1.414 2.121-2.121zM5.636 16.95l1.414 1.414-2.121 2.121-1.414-1.414 2.121-2.121zM23 11v2h-3v-2h3zM4 11v2H1v-2h3z"/></svg>
+            <svg id="moonIcon" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></svg>
+        </button>
+    </div>
+
+    <!-- Main Game Area -->
+    <main class="game-container" id="content">
+        <div class="instruction-box">
+            <h2 id="stepTitle">Phase 1: Initial Selection</h2>
+            <p id="stepInstruction">Select the column containing the <span id="currentLetterTarget" class="highlight-text">1st</span> letter of your word.</p>
+            <div class="progress-container">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <span class="progress-text" id="progressText">0%</span>
+            </div>
+        </div>
+        
+        <div class="table-container">
+            <table id="alphabetTable">
+                <thead id="tableHead"></thead>
+                <tbody id="tableBody"></tbody>                
             </table>
         </div>
-    </div>
-    <div id="modal" class="modal">
+    </main>
+
+    <!-- Setup Modal -->
+    <div id="setupModal" class="modal">
         <div class="modal-content">
-        
-            <h2>I Can Guess The Word in Our Mind!!!</h2>
-            <p>How? <br> Just Think Of A Word & Answer The Few Questions</p>
-            <input type="number" id="letterCount" required="required" placeholder="Enter Here, How Many Letters Your Word Has?">
-            <div id="errorMessage"></div>
+            <!-- Increased image size from 120px to 180px -->
+            <img src="favicon1.png" alt="Brain Mascot" style="max-width: 180px; margin: 0 auto 15px auto; display: block;">
+            <h2>I Can Guess Your Word!</h2>
+            <p>Think of a word. Tell me how many letters it has, and answer a few simple questions.</p>
+            <div class="input-group">
+                <input type="number" id="letterCount" min="1" max="20" placeholder="Number of letters? (e.g., 5)">
+                <div id="errorMessage" class="error-message"></div>
+            </div>
             <button id="letsPlayButton">Let's Play!</button>
         </div>
     </div>
 
+    <!-- Result Modal -->
     <div id="resultModal" class="modal">
         <div class="modal-content">
-            <div id="gameMessages"></div>
-            <span class="close-button">&times;</span>
-            <h2>Surprise!!!</h2>
-            <p id="resultMessage"></p>
+            <h2>✨ Surprise! ✨</h2>
+            <p>The word in your mind is:</p>
+            <div id="resultWord" class="result-word"></div>
+            <button id="playAgainButton" class="secondary-button">Play Again</button>
         </div>
     </div>
 
-    <script src="Guess.js"></script>
+    <script>
+        // --- Core Logic Data (Strictly Unchanged) ---
+        let initialTable = [
+            [0, ['a', 'e', 'i', 'm', 'q', 'u', 'y']],
+            [1, ['b', 'f', 'j', 'n', 'r', 'v', 'z']],
+            [2, ['c', 'g', 'k', 'o', 's', 'w']],
+            [3, ['d', 'h', 'l', 'p', 't', 'x']]
+        ];
+
+        // --- State Variables ---
+        let rowsList = [];
+        let rearrangedRowsList = [];
+        let resultColumnsList = [];
+        let resultWord = "";
+        let numberOfLetters = 0;
+        let currentPhase = 1; 
+        let currentLetterIndex = 0;
+
+        // --- DOM Elements ---
+        const contentDiv = document.getElementById("content");
+        const setupModal = document.getElementById("setupModal");
+        const resultModal = document.getElementById("resultModal");
+        const letterCountInput = document.getElementById("letterCount");
+        const errorMessage = document.getElementById("errorMessage");
+        const tableHead = document.getElementById("tableHead");
+        const tableBody = document.getElementById("tableBody");
+        const stepTitle = document.getElementById("stepTitle");
+        const stepInstruction = document.getElementById("stepInstruction");
+        const currentLetterTarget = document.getElementById("currentLetterTarget");
+        const progressFill = document.getElementById("progressFill");
+        const progressText = document.getElementById("progressText");
+        
+        // Theme Elements
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+
+        // --- Theme Management ---
+        function toggleTheme() {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcons(newTheme);
+        }
+
+        function updateThemeIcons(theme) {
+            if (theme === 'dark') {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            } else {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            }
+        }
+
+        // Initialize theme from storage or system preference
+        const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcons(savedTheme);
+        themeToggleBtn.addEventListener('click', toggleTheme);
+
+        // --- Helper Functions ---
+        function getOrdinal(n) {
+            const s = ["th", "st", "nd", "rd"];
+            const v = n % 100;
+            return n + (s[(v - 20) % 10] || s[v] || s[0]);
+        }
+
+        function showModal(modal) {
+            modal.style.display = "flex";
+            setTimeout(() => modal.classList.add("show"), 10);
+            contentDiv.classList.add("blur-background");
+        }
+
+        function hideModal(modal) {
+            modal.classList.remove("show");
+            setTimeout(() => {
+                modal.style.display = "none";
+                contentDiv.classList.remove("blur-background");
+            }, 300);
+        }
+
+        // --- Game Initialization ---
+        function initGame() {
+            rowsList = [];
+            rearrangedRowsList = [];
+            resultColumnsList = [];
+            resultWord = "";
+            currentPhase = 1;
+            currentLetterIndex = 0;
+            
+            letterCountInput.value = "";
+            errorMessage.innerText = "";
+            progressFill.style.width = "0%";
+            progressText.innerText = "0%";
+            
+            // Clear table to prevent leftover height/scroll glitches
+            tableHead.innerHTML = "";
+            tableBody.innerHTML = "";
+            
+            showModal(setupModal);
+            setTimeout(() => letterCountInput.focus(), 300);
+        }
+
+        // --- Core Rendering Engine ---
+        function renderTable() {
+            tableHead.innerHTML = "";
+            tableBody.innerHTML = "";
+
+            const columns = currentPhase === 1 ? 4 : 7;
+            const rows = currentPhase === 1 ? 7 : numberOfLetters; 
+
+            // Create Header Row
+            let headerRow = document.createElement('tr');
+            for (let i = 0; i < columns; i++) {
+                let th = document.createElement('th');
+                
+                // FORCE exact equal widths for all columns based on the current phase.
+                th.style.width = `${100 / columns}%`; 
+
+                let btn = document.createElement('button');
+                btn.className = 'columnButton';
+                
+                // Add Number and Key Hint
+                btn.innerHTML = `<span>${i + 1}</span> <span class="key-hint">[Key ${i + 1}]</span>`;
+                btn.onclick = () => handleColumnSelection(i);
+                
+                th.appendChild(btn);
+                headerRow.appendChild(th);
+            }
+            tableHead.appendChild(headerRow);
+
+            // Create Body Rows exactly matching the original logic formatting
+            if (currentPhase === 1) {
+                for (let r = 0; r < 7; r++) {
+                    let tr = document.createElement('tr');
+                    for (let c = 0; c < 4; c++) {
+                        let td = document.createElement('td');
+                        td.innerText = initialTable[c][1][r] || ''; 
+                        tr.appendChild(td);
+                    }
+                    tableBody.appendChild(tr);
+                }
+            } else {
+                for (let r = 0; r < numberOfLetters; r++) {
+                    let tr = document.createElement('tr');
+                    for (let c = 0; c < 7; c++) {
+                        let td = document.createElement('td');
+                        td.innerText = rearrangedRowsList[r][c] || '';
+                        tr.appendChild(td);
+                    }
+                    tableBody.appendChild(tr);
+                }
+            }
+        }
+
+        function updateUI() {
+            if (currentPhase === 1) {
+                stepTitle.innerText = "Phase 1: Initial Selection";
+                stepInstruction.innerHTML = `Select the column containing the <span id="currentLetterTarget" class="highlight-text">${getOrdinal(currentLetterIndex + 1)}</span> letter of your word.`;
+            } else {
+                stepTitle.innerText = "Phase 2: Final Confirmation";
+                stepInstruction.innerHTML = `Confirm the column containing the <span id="currentLetterTarget" class="highlight-text">${getOrdinal(currentLetterIndex + 1)}</span> letter of your word.`;
+            }
+            
+            const totalSteps = numberOfLetters * 2;
+            const currentStep = (currentPhase === 1 ? currentLetterIndex : numberOfLetters + currentLetterIndex);
+            const percentage = Math.round((currentStep / totalSteps) * 100);
+            
+            progressFill.style.width = `${percentage}%`;
+            progressText.innerText = `${percentage}%`;
+        }
+
+        // --- Core Logic Implementations ---
+        function handleColumnSelection(columnIndex) {
+            if (currentPhase === 1) {
+                rowsList.push(columnIndex);
+                currentLetterIndex++;
+
+                if (currentLetterIndex >= numberOfLetters) {
+                    preparePhaseTwo();
+                } else {
+                    updateUI();
+                }
+            } else if (currentPhase === 2) {
+                resultColumnsList.push(columnIndex);
+                currentLetterIndex++;
+
+                if (currentLetterIndex >= numberOfLetters) {
+                    progressFill.style.width = "100%";
+                    progressText.innerText = "100%";
+                    setTimeout(calculateResult, 400); 
+                } else {
+                    updateUI();
+                }
+            }
+        }
+
+        function preparePhaseTwo() {
+            rearrangedRowsList = [];
+            
+            rowsList.forEach(index => {
+                let newRow = [...initialTable[index][1]];
+                while (newRow.length < 7) {
+                    newRow.push('');
+                }
+                rearrangedRowsList.push(newRow);
+            });
+
+            currentPhase = 2;
+            currentLetterIndex = 0;
+            
+            renderTable();
+            updateUI();
+        }
+
+        function calculateResult() {
+            resultWord = "";
+            for (let i = 0; i < numberOfLetters; i++) {
+                let colIndex = resultColumnsList[i];
+                resultWord += rearrangedRowsList[i][colIndex];
+            }
+
+            document.getElementById("resultWord").innerText = resultWord;
+            showModal(resultModal);
+        }
+
+        // --- Event Listeners ---
+        document.getElementById('letsPlayButton').addEventListener('click', () => {
+            const val = parseInt(letterCountInput.value);
+            if (isNaN(val) || val <= 0 || val > 30) {
+                errorMessage.innerText = "Please enter a valid number (e.g., 1 - 30).";
+                return;
+            }
+            
+            numberOfLetters = val;
+            hideModal(setupModal);
+            
+            renderTable();
+            updateUI();
+        });
+
+        // Allow pressing 'Enter' on the input field
+        letterCountInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                document.getElementById('letsPlayButton').click();
+            }
+        });
+
+        document.getElementById('playAgainButton').addEventListener('click', () => {
+            hideModal(resultModal);
+            setTimeout(initGame, 300); 
+        });
+
+        // Keyboard Event Listener for Columns (1-7)
+        document.addEventListener('keydown', (e) => {
+            if (setupModal.classList.contains('show') || resultModal.classList.contains('show')) {
+                return;
+            }
+
+            const key = parseInt(e.key);
+            const maxColumns = currentPhase === 1 ? 4 : 7;
+
+            if (!isNaN(key) && key >= 1 && key <= maxColumns) {
+                handleColumnSelection(key - 1);
+                
+                const buttons = document.querySelectorAll('.columnButton');
+                if(buttons[key - 1]) {
+                    buttons[key - 1].style.transform = 'translateY(0)';
+                    buttons[key - 1].style.backgroundColor = 'var(--primary-hover)';
+                    setTimeout(() => {
+                        buttons[key - 1].style.transform = '';
+                        buttons[key - 1].style.backgroundColor = '';
+                    }, 150);
+                }
+            }
+        });
+
+        // Start game on load
+        window.onload = initGame;
+
+    </script>
 </body>
 </html>
